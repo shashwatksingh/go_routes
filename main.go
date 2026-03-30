@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"rest_api/db"
 	"rest_api/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,20 @@ func getEvents(context *gin.Context)  {
 		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch events"})
 	}
 	context.JSON(http.StatusOK, events)
+}
+
+func getEvent(context *gin.Context)  {
+	eventId, err :=strconv.Atoi(context.Param("eventId"))
+	if err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch event"})
+	}
+
+	event, err:=models.GetEventById(int64(eventId))
+	if err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch event"})
+	}
+	
+	context.JSON(http.StatusOK, event)
 }
 
 func createEvents(context *gin.Context)  {
@@ -48,6 +63,7 @@ func main()  {
 
 	server.GET("/", homeRoute)
 	server.GET("/events", getEvents)
+	server.GET("/events/:eventId", getEvent)
 	server.POST("/events", createEvents)
 
 
