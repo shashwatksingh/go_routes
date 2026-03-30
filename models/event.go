@@ -1,22 +1,64 @@
 package models
 
-import "time"
+import (
+	"rest_api/db"
+	"time"
+)
 
 type Event struct {
-	ID int `json:"id"`
+	ID int64 `json:"id"`
 	Name string `json:"name" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	Location string `json:"location" binding:"required"`
 	DateTime time.Time `json:"date_time" binding:"required"`
-	UserID int `json:"user_id"`
+	UserID int64 `json:"user_id"`
 }
 
 var events = []Event{}
 
-func (e Event) Save() {
-	events = append(events, e)
+func (e *Event) Save() error {
+	query := `INSERT INTO events(name, description, location, date_time, user_id)
+	VALUES(?, ?, ?, ?, ?)`
+
+	stmt, err := db.Db.Prepare(query)
+	
+	if err!=nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	result, err := stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserID)
+	if err!=nil {
+		return err
+	}
+
+	id, err := result.LastInsertId()
+	e.ID = id
+
+	return err
 }
 
-func GetAllEvents() []Event{
-	return events
+func GetAllEvents() ([]Event,error){
+	query := `SELECT * FROM events`
+
+	rows, err := db.Db.Query(query)
+	if(err!=nil) {
+		return nil,err
+	}
+
+	defer rows.Close()
+
+	var events []Event
+	
+	for rows.Next() {
+		var event Event
+		if err:=rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID); err!=nil {
+			return nil, err
+		}
+
+		events = append(events, event)
+	}
+
+	return events, nil
 }

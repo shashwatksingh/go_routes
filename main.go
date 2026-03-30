@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"rest_api/db"
 	"rest_api/models"
 
 	"github.com/gin-gonic/gin"
@@ -13,26 +14,36 @@ func homeRoute(context *gin.Context) {
 }
 
 func getEvents(context *gin.Context)  {
-	context.JSON(http.StatusOK, models.GetAllEvents())
+	events, err:=models.GetAllEvents()
+	if err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch events"})
+	}
+	context.JSON(http.StatusOK, events)
 }
 
 func createEvents(context *gin.Context)  {
 	var event models.Event
-	err := context.ShouldBindJSON(&event)
-	if err!=nil {
+	
+	if err := context.ShouldBindJSON(&event); err!=nil {
 		fmt.Println(err.Error())
 		context.JSON(http.StatusBadRequest, gin.H{"message" : "Could not parse the request"})
 		return
 	}
 
-	event.ID = 1
-	event.UserID = 1
-	event.Save()
+
+	event.UserID=1
+	err :=event.Save()
+	if err!=nil {
+		fmt.Println(err.Error())
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not save events"})
+		return
+	}
 
 	context.JSON(http.StatusCreated, gin.H{"message" : "Event created", "event": event})
 }
 
 func main()  {
+	db.InitDB()
 	server := gin.Default()
 
 	server.GET("/", homeRoute)
