@@ -23,6 +23,20 @@ func getEvents(context *gin.Context)  {
 }
 
 func getEvent(context *gin.Context)  {
+	eventId, err := strconv.ParseInt(context.Param("eventId"), 10, 64)
+	if err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch event"})
+	}
+
+	event, err:=models.GetEventById(eventId)
+	if err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch event"})
+	}
+
+	context.JSON(http.StatusOK, event)
+}
+
+func updateEvent(context *gin.Context)  {
 	eventId, err :=strconv.Atoi(context.Param("eventId"))
 	if err!=nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch event"})
@@ -32,7 +46,9 @@ func getEvent(context *gin.Context)  {
 	if err!=nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch event"})
 	}
+
 	
+
 	context.JSON(http.StatusOK, event)
 }
 
@@ -64,6 +80,9 @@ func main()  {
 	server.GET("/", homeRoute)
 	server.GET("/events", getEvents)
 	server.GET("/events/:eventId", getEvent)
+	server.PUT("/events/:eventId", updateEvent)
+	// server.DELETE("/events/:eventId", deleteEvent)
+
 	server.POST("/events", createEvents)
 
 
