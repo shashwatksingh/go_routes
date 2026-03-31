@@ -63,6 +63,24 @@ func updateEvent(context *gin.Context)  {
 	context.JSON(http.StatusOK, updatedEvent)
 }
 
+func deleteEvent(context *gin.Context)  {
+	eventId, err :=strconv.ParseInt(context.Param("eventId"), 10, 64)
+	if err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not parse the id"})
+	}
+
+	event, err := models.GetEventById(eventId)
+	if err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Could not fetch event"})
+	}
+
+	if err = event.DeleteEvent(); err!=nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message":"Internal Server Error "})
+	}
+
+	context.Status(http.StatusNoContent)
+}
+
 func createEvents(context *gin.Context)  {
 	var event models.Event
 	
@@ -92,7 +110,7 @@ func main()  {
 	server.GET("/events", getEvents)
 	server.GET("/events/:eventId", getEvent)
 	server.PUT("/events/:eventId", updateEvent)
-	// server.DELETE("/events/:eventId", deleteEvent)
+	server.DELETE("/events/:eventId", deleteEvent)
 
 	server.POST("/events", createEvents)
 
