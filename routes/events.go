@@ -9,10 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func homeRoute(context *gin.Context) {
-	context.String(http.StatusOK, "Hello World")
-}
-
 func getEvents(context *gin.Context) {
 	events, err := models.GetAllEvents()
 	if err != nil {
