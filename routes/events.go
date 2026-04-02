@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"rest_api/models"
-	"rest_api/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -78,18 +77,6 @@ func deleteEvent(context *gin.Context) {
 }
 
 func createEvents(context *gin.Context) {
-	token := context.Request.Header.Get("Authorization")
-	if token == "" {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized"})
-		return
-	}
-
-	userId, err:=utils.VerifyToken(token)
-	if err!= nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized"})
-		return
-	}
-
 	var event models.Event
 
 	if err := context.ShouldBindJSON(&event); err != nil {
@@ -98,8 +85,9 @@ func createEvents(context *gin.Context) {
 		return
 	}
 
+	userId := context.GetInt64("userId")
 	event.UserID = userId
-	err = event.Save()
+	err := event.Save()
 	if err != nil {
 		fmt.Println(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not save events"})
