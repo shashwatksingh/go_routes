@@ -84,7 +84,8 @@ func createEvents(context *gin.Context) {
 		return
 	}
 
-	if err:=utils.VerifyToken(token); err!= nil {
+	userId, err:=utils.VerifyToken(token)
+	if err!= nil {
 		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized"})
 		return
 	}
@@ -97,8 +98,8 @@ func createEvents(context *gin.Context) {
 		return
 	}
 
-	event.UserID = 1
-	err := event.Save()
+	event.UserID = userId
+	err = event.Save()
 	if err != nil {
 		fmt.Println(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not save events"})
