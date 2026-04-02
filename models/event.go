@@ -115,3 +115,18 @@ func (e *Event) UpdateEvent() error {
 
 	return err
 }
+
+func (e *Event) RegisterForEvent(userId int64) error {
+	query := `
+	INSERT INTO registrations(event_id, user_id) VALUES(?,?)`
+
+	stmt, err := db.Db.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.ID, userId)
+	return err
+}
