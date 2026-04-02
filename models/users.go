@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"rest_api/db"
 	"rest_api/utils"
 	"time"
@@ -10,13 +11,13 @@ type User struct {
 	ID       int64     `json:"id"`
 	Email    string    `json:"email" binding:"required"`
 	Password string    `json:"password" binding:"required"`
-	DateTime time.Time `json:"date_time" binding:"required"`
+	DateTime time.Time `json:"date_time"`
 }
 
-func(u *User) Save() error {
+func (u *User) Save() error {
 	query := "INSERT INTO users(email, password, date_time) VALUES (?, ?, ?)"
 	stmt, err := db.Db.Prepare(query)
-	if err!=nil {
+	if err != nil {
 		return err
 	}
 	defer stmt.Close()
@@ -37,5 +38,23 @@ func(u *User) Save() error {
 	}
 
 	u.ID = userId
+	return nil
+}
+
+func (u *User) ValidateCredentials() error {
+	query := "SELECT id, password FROM users WHERE email=?"
+	row := db.Db.QueryRow(query, u.Email)
+
+	var retrievedPassword string
+
+	if err := row.Scan(&u.ID, &retrievedPassword); err != nil {
+		return errors.New("Invalid Credentials")
+	}
+
+	isPasswordValid := utils.CheckPasswordHash(u.Password, retrievedPassword)
+	if !isPasswordValid {
+		return errors.New("Invalid Credentials")
+	}
+
 	return nil
 }
