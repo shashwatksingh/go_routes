@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"rest_api/config"
 	"rest_api/db"
 	"rest_api/routes"
 
@@ -14,10 +15,11 @@ func homeRoute(context *gin.Context) {
 
 func main() {
 	db.InitDB()
+	config.LoadDotEnv()
 	server := gin.Default()
 
 	server.GET("/", homeRoute)
 	routes.RegisterRoutes(server)
 
-	server.Run(":4002")
+	server.Run(":" + config.GetEnv("PORT"))
 }
