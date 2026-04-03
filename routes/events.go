@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 	"rest_api/models"
 	"strconv"
@@ -51,7 +50,6 @@ func updateEvent(context *gin.Context) {
 	}
 
 	if err := context.ShouldBindJSON(&updatedEvent); err != nil {
-		fmt.Println(err.Error())
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse the request"})
 		return
 	}
@@ -93,7 +91,6 @@ func createEvents(context *gin.Context) {
 	var event models.Event
 
 	if err := context.ShouldBindJSON(&event); err != nil {
-		fmt.Println(err.Error())
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse the request"})
 		return
 	}
@@ -102,7 +99,6 @@ func createEvents(context *gin.Context) {
 	event.UserID = userId
 	err := event.Save()
 	if err != nil {
-		fmt.Println(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not save events"})
 		return
 	}
