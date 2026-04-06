@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"rest_api/utils"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -9,20 +10,29 @@ import (
 var Db *sql.DB
 
 func InitDB() {
+	logger := utils.GetLogger()
 	var err error
+	
+	logger.Info("Initializing database connection...")
 	Db, err = sql.Open("sqlite3", "api.db")
 
 	if err != nil {
-		panic("Database not connected")
+		logger.WithError(err).Fatal("Failed to connect to database")
 	}
 
 	Db.SetMaxOpenConns(10)
 	Db.SetMaxIdleConns(5)
+	
+	logger.Info("Database connection established successfully")
 
 	createTables()
 }
 
 func createTables() {
+	logger := utils.GetLogger()
+	
+	logger.Info("Creating database tables if they don't exist...")
+	
 	createUsersTable := `CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		email TEXT NOT NULL UNIQUE,
@@ -31,8 +41,9 @@ func createTables() {
 	)`
 
 	if _, err := Db.Exec(createUsersTable); err != nil {
-		panic("Could not create users table!")
+		logger.WithError(err).Fatal("Failed to create users table")
 	}
+	logger.Debug("Users table ready")
 
 	createEventsTable := `CREATE TABLE IF NOT EXISTS events (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,8 +56,9 @@ func createTables() {
 	)`
 
 	if _, err := Db.Exec(createEventsTable); err != nil {
-		panic("Could not create events table!")
+		logger.WithError(err).Fatal("Failed to create events table")
 	}
+	logger.Debug("Events table ready")
 
 	registrationTables := `CREATE TABLE IF NOT EXISTS registrations (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,6 +69,9 @@ func createTables() {
 	)`
 
 	if _, err := Db.Exec(registrationTables); err != nil {
-		panic("Could not create registrations table!")
+		logger.WithError(err).Fatal("Failed to create registrations table")
 	}
+	logger.Debug("Registrations table ready")
+	
+	logger.Info("All database tables created successfully")
 }
